@@ -1,0 +1,22 @@
+{
+    "label": {
+        "en-GB": "Unsplash"
+    },
+    "map": {
+        "id": "id",
+        "title": "description",
+        "description": "user.name",
+        "datePublished": "created_at",
+        "dateModified": "updated_at",
+        "thumbnail": "urls.thumb"
+    },
+    "display_options": {
+        "description": {
+            "en-GB": "Show description"
+        },
+        "thumbnail": {
+            "en-GB": "Show thumbnail"
+        }
+    },
+    "display_attributes": ["description", "thumbnail", "datePublished"]
+}
