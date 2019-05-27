@@ -1,9 +1,8 @@
 <?php
 
-namespace Prototype\Model\Unsplash;
+namespace Frontender\Platform\Model\Unsplash;
 
 use Slim\Container;
-use Frontender\Core\Model\AbstractModel;
 
 class ImageModel extends AbstractModel
 {
@@ -18,14 +17,20 @@ class ImageModel extends AbstractModel
     public function fetch()
     {
         // Force it to an array, we need to access "private" data.
-        $data = \Crew\Unsplash\Photo::find($this->getState()->id);
-        $image = self::getImageArray($data);
+        try {
+            $data = \Crew\Unsplash\Photo::find($this->getState()->id);
+            $image = self::getImageArray($data);
 
-        $model = new ImageModel($this->container);
-        $model->setState($this->getState()->getValues())
-            ->setData($image);
+            $model = new ImageModel($this->container);
+            $model->setState($this->getState()->getValues())
+                ->setData($image);
 
-        return [$model];
+            return [$model];
+        } catch(\Exception $e) {
+            return [false];
+        } catch(\Error $e) {
+            return [false];
+        }
     }
 
     public static function getImageArray($data)
