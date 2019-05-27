@@ -1,10 +1,10 @@
 <?php
 
-namespace Prototype\Model\Unsplash\Image;
+namespace Frontender\Platform\Model\Unsplash\Image;
 
 use Slim\Container;
-use Prototype\Model\Unsplash\ImageModel;
-use Prototype\Model\Unsplash\AbstractModel;
+use Frontender\Platform\Model\Unsplash\ImageModel;
+use Frontender\Platform\Model\Unsplash\AbstractModel;
 
 class SearchModel extends AbstractModel
 {
@@ -25,32 +25,47 @@ class SearchModel extends AbstractModel
         $page = 1;
 
         if(isset($state['id'])) {
-            // Return the image model.
-            $model = new ImageModel($this->container);
-            $model->setState([
-                'id' => $state['id']
-            ]);
+            if(is_array($state['id'])) {
+                return array_map(function($id) {
+                    $model = new ImageModel($this->container);
+                    $model->setState([
+                        'id' => $id
+                    ]);
 
-            return $model->fetch();
+                    $result = $model->fetch();
+                    return $result[0];
+                }, $state['id']);
+            } else {
+                // Return the image model.
+                $model = new ImageModel($this->container);
+                $model->setState([
+                    'id' => $state['id']
+                ]);
+
+                return $model->fetch();
+            }
         }
 
         if (isset($state['skip']) && !empty($state['skip'])) {
             $page = ($state['skip'] / $state['limit']) + $page;
         }
 
-        error_log(print_r($state, 1));
-        error_log($page);
+        try {
+            if (isset($state['q']) && !empty($state['q'])) {
+                $data = \Crew\Unsplash\Search::photos($state['q'], $page, $state['limit']);
+                $data = $data->getResults();
+            } else {
+                $data = \Crew\Unsplash\Photo::all($page, $state['limit']);
+                $images = $data->getArrayCopy();
 
-        if (isset($state['q']) && !empty($state['q'])) {
-            $data = \Crew\Unsplash\Search::photos($state['q'], $page, $state['limit']);
-            $data = $data->getResults();
-        } else {
-            $data = \Crew\Unsplash\Photo::all($page, $state['limit']);
-            $images = $data->getArrayCopy();
-
-            $data = array_map(function ($image) {
-                return ImageModel::getImageArray($image);
-            }, $images);
+                $data = array_map(function ($image) {
+                    return ImageModel::getImageArray($image);
+                }, $images);
+            }
+        } catch(\Exception $e) {
+            $data = [];
+        } catch(\Error $e) {
+            $data = [];
         }
         $container = $this->container;
 
